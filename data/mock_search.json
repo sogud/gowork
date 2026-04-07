@@ -1,0 +1,28 @@
+{
+  "search_results": [
+    {
+      "keyword": "go",
+      "title": "Go Programming Language",
+      "url": "https://golang.org",
+      "snippet": "Go is a statically typed, compiled programming language designed at Google."
+    },
+    {
+      "keyword": "agent",
+      "title": "AI Agents Overview",
+      "url": "https://example.com/agents",
+      "snippet": "AI agents are autonomous systems that can perceive and act upon their environment."
+    },
+    {
+      "keyword": "llm",
+      "title": "Large Language Models",
+      "url": "https://example.com/llm",
+      "snippet": "LLMs are deep learning models trained on massive text datasets."
+    },
+    {
+      "keyword": "default",
+      "title": "General Information",
+      "url": "https://example.com",
+      "snippet": "A comprehensive resource for general information and knowledge."
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+# Binaries
+gowork
+cowork-agent
+coverage.out
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store

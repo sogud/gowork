@@ -1,0 +1,36 @@
+server:
+  port: 8080
+  mode: "api"
+  log_level: "info"
+
+ollama:
+  base_url: "http://localhost:11434"
+  model: "gemma4"
+  timeout: 60s
+  max_retries: 3
+
+agents:
+  - name: "researcher"
+    enabled: true
+  - name: "analyst"
+    enabled: true
+  - name: "writer"
+    enabled: true
+  - name: "reviewer"
+    enabled: true
+  - name: "coordinator"
+    enabled: true
+
+workflow:
+  default_type: "dynamic"
+  timeout: 300s
+
+memory:
+  type: "inmemory"
+
+tools:
+  web_search:
+    enabled: true
+    mode: "mock"
+  file_operations:
+    enabled: true
