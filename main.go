@@ -15,7 +15,9 @@ import (
 	"github.com/sogud/gowork/memory"
 	"github.com/sogud/gowork/model"
 	"github.com/sogud/gowork/server"
+	"github.com/sogud/gowork/state"
 	"github.com/sogud/gowork/tools"
+	"github.com/sogud/gowork/tui"
 	"github.com/sogud/gowork/workflow"
 	adkagent "google.golang.org/adk/agent"
 	adkmodel "google.golang.org/adk/model"
@@ -24,7 +26,7 @@ import (
 // CLI flags
 var (
 	configPath = flag.String("config", "config.yaml", "Path to configuration file")
-	mode       = flag.String("mode", "api", "Running mode: api or cli")
+	mode       = flag.String("mode", "api", "Running mode: api, cli, or tui")
 	task       = flag.String("task", "", "Task description for CLI mode")
 )
 
@@ -137,8 +139,10 @@ func main() {
 			log.Fatal("CLI mode requires --task flag")
 		}
 		runCLIMode(ctx, app, *task)
+	case "tui":
+		runTUIMode(app)
 	default:
-		log.Fatalf("Unknown mode: %s. Use 'api' or 'cli'", *mode)
+		log.Fatalf("Unknown mode: %s. Use 'api', 'cli', or 'tui'", *mode)
 	}
 }
 
@@ -424,4 +428,58 @@ func runCLIMode(ctx context.Context, app *Application, taskDescription string) {
 	}
 	fmt.Println("\n=== Final Output ===")
 	fmt.Println(result.Output)
+}
+
+// runTUIMode starts the TUI application.
+func runTUIMode(app *Application) {
+	log.Println("Starting TUI mode...")
+
+	// Create initial state with configuration
+	initialState := state.NewAppState()
+
+	// Set up agents info in state
+	var agentInfos []state.AgentInfo
+	for _, name := range app.registry.List() {
+		agentInfos = append(agentInfos, state.AgentInfo{
+			Name:        name,
+			Description: getAgentDescription(name),
+			Status:      state.AgentWaiting,
+		})
+	}
+	initialState.Agents = agentInfos
+
+	// Set up config state
+	initialState.Config = state.ConfigState{
+		ModelProvider: state.ModelProviderConfig{
+			Type:      app.config.Model.Provider,
+			ModelName: app.config.Model.Name,
+			BaseURL:   app.config.Model.Ollama.BaseURL,
+			Timeout:   int(app.config.Model.Ollama.Timeout.Seconds()),
+		},
+		WorkflowDefaults: state.WorkflowDefaultsConfig{
+			DefaultType: app.config.Workflow.DefaultType,
+			Timeout:     int(app.config.Workflow.Timeout.Seconds()),
+			MaxIter:     3,
+		},
+	}
+
+	// Start TUI
+	if err := tui.RunWithState(initialState); err != nil {
+		log.Fatalf("TUI error: %v", err)
+	}
+}
+
+// getAgentDescription returns a description for an agent by name.
+func getAgentDescription(name string) string {
+	descriptions := map[string]string{
+		"researcher":  "研究员 - 收集信息并进行初步研究",
+		"analyst":     "分析师 - 分析数据并提供洞察",
+		"writer":      "撰写者 - 创建内容、报告和文档",
+		"reviewer":    "审核员 - 审查并提供反馈",
+		"coordinator": "协调员 - 编排多智能体工作流",
+	}
+	if desc, ok := descriptions[name]; ok {
+		return desc
+	}
+	return name
 }
