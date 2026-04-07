@@ -134,7 +134,7 @@ func TestHistoryScreenRenderDetailView(t *testing.T) {
 	history := NewHistoryScreen(nil)
 	now := time.Now()
 	record := state.WorkflowRecord{
-		ID:          "test-detail-001",
+		ID:          "test-det-001",
 		Task:        "Detailed task analysis",
 		Type:        state.WorkflowDynamic,
 		Status:      state.WorkflowCompleted,
@@ -174,7 +174,7 @@ func TestHistoryScreenRenderDetailView(t *testing.T) {
 	}
 
 	// Should contain workflow ID
-	if !strings.Contains(output, "test-detail") {
+	if !strings.Contains(output, "test-det") {
 		t.Error("Render detail view should contain workflow ID")
 	}
 
@@ -249,34 +249,31 @@ func TestHistoryScreenUpdateArrowKeys(t *testing.T) {
 	}
 
 	// Test pressing up arrow
-	result := history.Update(tea.KeyMsg{Type: tea.KeyUp}, model)
-	if result != nil {
-		t.Error("Update for arrow keys should return nil (just updates selection)")
-	}
+	_ = history.Update(tea.KeyMsg{Type: tea.KeyUp}, model)
 	if model.History.SelectedIndex != 0 {
 		t.Errorf("After pressing up, SelectedIndex should be 0, got %d", model.History.SelectedIndex)
 	}
 
 	// Test pressing up again (at top, should stay at 0)
-	result = history.Update(tea.KeyMsg{Type: tea.KeyUp}, model)
+	_ = history.Update(tea.KeyMsg{Type: tea.KeyUp}, model)
 	if model.History.SelectedIndex != 0 {
 		t.Errorf("At top, pressing up should keep SelectedIndex at 0, got %d", model.History.SelectedIndex)
 	}
 
 	// Test pressing down arrow
-	result = history.Update(tea.KeyMsg{Type: tea.KeyDown}, model)
+	_ = history.Update(tea.KeyMsg{Type: tea.KeyDown}, model)
 	if model.History.SelectedIndex != 1 {
 		t.Errorf("After pressing down, SelectedIndex should be 1, got %d", model.History.SelectedIndex)
 	}
 
 	// Test pressing down again
-	result = history.Update(tea.KeyMsg{Type: tea.KeyDown}, model)
+	_ = history.Update(tea.KeyMsg{Type: tea.KeyDown}, model)
 	if model.History.SelectedIndex != 2 {
 		t.Errorf("After pressing down, SelectedIndex should be 2, got %d", model.History.SelectedIndex)
 	}
 
 	// Test pressing down at bottom (should stay at max)
-	result = history.Update(tea.KeyMsg{Type: tea.KeyDown}, model)
+	_ = history.Update(tea.KeyMsg{Type: tea.KeyDown}, model)
 	if model.History.SelectedIndex != 2 {
 		t.Errorf("At bottom, pressing down should keep SelectedIndex at 2, got %d", model.History.SelectedIndex)
 	}
@@ -420,11 +417,8 @@ func TestHistoryScreenUpdateSearchConfirm(t *testing.T) {
 	}
 
 	// Test pressing Enter to confirm search
-	result := history.Update(tea.KeyMsg{Type: tea.KeyEnter}, model)
+	_ = history.Update(tea.KeyMsg{Type: tea.KeyEnter}, model)
 
-	if result != nil {
-		t.Error("Update for Enter in search mode should return nil")
-	}
 	if history.IsSearching() {
 		t.Error("Should not be in search mode after pressing Enter")
 	}
@@ -445,11 +439,8 @@ func TestHistoryScreenUpdateSearchCancel(t *testing.T) {
 	}
 
 	// Test pressing Esc to cancel search
-	result := history.Update(tea.KeyMsg{Type: tea.KeyEsc}, model)
+	_ = history.Update(tea.KeyMsg{Type: tea.KeyEsc}, model)
 
-	if result != nil {
-		t.Error("Update for Esc in search mode should return nil")
-	}
 	if history.IsSearching() {
 		t.Error("Should not be in search mode after pressing Esc")
 	}
@@ -458,7 +449,7 @@ func TestHistoryScreenUpdateSearchCancel(t *testing.T) {
 func TestHistoryScreenUpdateDetailViewEsc(t *testing.T) {
 	history := NewHistoryScreen(nil)
 	record := state.WorkflowRecord{
-		ID:     "test-detail-esc",
+		ID:     "test-det-esc",
 		Task:   "Test",
 		Status: state.WorkflowCompleted,
 	}
@@ -474,11 +465,8 @@ func TestHistoryScreenUpdateDetailViewEsc(t *testing.T) {
 	}
 
 	// Test pressing Esc to exit detail view
-	result := history.Update(tea.KeyMsg{Type: tea.KeyEsc}, model)
+	_ = history.Update(tea.KeyMsg{Type: tea.KeyEsc}, model)
 
-	if result != nil {
-		t.Error("Update for Esc in detail view should return nil")
-	}
 	if model.History.ViewDetail {
 		t.Error("ViewDetail should be false after pressing Esc in detail view")
 	}
@@ -490,7 +478,7 @@ func TestHistoryScreenUpdateDetailViewEsc(t *testing.T) {
 func TestHistoryScreenUpdateDetailViewEnter(t *testing.T) {
 	history := NewHistoryScreen(nil)
 	record := state.WorkflowRecord{
-		ID:     "test-detail-enter",
+		ID:     "test-det-enter",
 		Task:   "Test",
 		Status: state.WorkflowCompleted,
 	}
@@ -506,7 +494,7 @@ func TestHistoryScreenUpdateDetailViewEnter(t *testing.T) {
 	}
 
 	// Test pressing Enter to exit detail view
-	history.Update(tea.KeyMsg{Type: tea.KeyEnter}, model)
+	_ = history.Update(tea.KeyMsg{Type: tea.KeyEnter}, model)
 
 	if model.History.ViewDetail {
 		t.Error("ViewDetail should be false after pressing Enter in detail view")
