@@ -1,20 +1,28 @@
 # Gowork
 
-A multi-agent collaboration framework built with Go, leveraging adk-go and Ollama Gemma 4 for intelligent workflow orchestration.
+Multi-agent collaboration framework supporting any ADK-compatible models (Ollama, Gemini, custom).
 
 ## Overview
 
-Gowork is a flexible multi-agent system that enables complex task execution through specialized AI agents working together. The system supports multiple workflow patterns including sequential, parallel, loop, and dynamic orchestration.
+Gowork is a flexible multi-agent system that enables complex task execution through specialized AI agents working together. The system supports multiple workflow patterns and **multiple model providers**.
 
 ### Key Features
 
+- **Multi-Model Support**: Works with Ollama, Gemini, or any ADK-compatible model
 - **Multi-Agent Architecture**: 5 specialized agents (Researcher, Analyst, Writer, Reviewer, Coordinator)
 - **Flexible Workflows**: Sequential, parallel, loop, and dynamic execution patterns
-- **Streaming Support**: Real-time response streaming from Ollama models
+- **Streaming Support**: Real-time response streaming
 - **State Management**: Shared memory service for agent collaboration
 - **Extensible Tools**: Pluggable tool registry for extending agent capabilities
 - **REST API**: HTTP endpoints for workflow execution and management
-- **CLI Mode**: Direct command-line execution for quick tasks
+
+## Supported Models
+
+| Provider | Description | Configuration |
+|----------|-------------|---------------|
+| **Ollama** | Local models (Gemma, Llama, etc.) | `provider: ollama` |
+| **Gemini** | Google Gemini API | `provider: gemini` |
+| **Custom** | Any ADK-compatible model | `provider: custom` |
 
 ## Architecture
 

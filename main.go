@@ -40,12 +40,25 @@ type Application struct {
 
 // AppConfig holds the application configuration from YAML file.
 type AppConfig struct {
-	Server  ServerConfig  `yaml:"server"`
-	Ollama  OllamaConfig  `yaml:"ollama"`
-	Agents  []AgentConfig `yaml:"agents"`
+	Model    ModelConfig   `yaml:"model"`
+	Server   ServerConfig  `yaml:"server"`
+	Agents   []AgentConfig `yaml:"agents"`
 	Workflow WorkflowConfig `yaml:"workflow"`
-	Memory  MemoryConfig  `yaml:"memory"`
-	Tools   ToolsConfig   `yaml:"tools"`
+	Memory   MemoryConfig  `yaml:"memory"`
+	Tools    ToolsConfig   `yaml:"tools"`
+}
+
+// ModelConfig holds model provider configuration.
+type ModelConfig struct {
+	Provider string      `yaml:"provider"`
+	Name     string      `yaml:"name"`
+	Ollama   OllamaConfig `yaml:"ollama"`
+	Gemini   GeminiConfig `yaml:"gemini"`
+}
+
+// GeminiConfig holds Gemini model configuration.
+type GeminiConfig struct {
+	APIKey string `yaml:"api_key"`
 }
 
 // ServerConfig holds server configuration.
@@ -135,16 +148,20 @@ func loadConfig(path string) (*AppConfig, error) {
 	// For now, return default configuration
 	// TODO: Implement proper YAML parsing using yaml.v3 or similar
 	config := &AppConfig{
+		Model: ModelConfig{
+			Provider: "ollama",
+			Name:     "gemma4",
+			Ollama: OllamaConfig{
+				BaseURL:   "http://localhost:11434",
+				Model:     "gemma4",
+				Timeout:   60 * time.Second,
+				MaxRetries: 3,
+			},
+		},
 		Server: ServerConfig{
 			Port:     8080,
 			Mode:     "api",
 			LogLevel: "info",
-		},
-		Ollama: OllamaConfig{
-			BaseURL:   "http://localhost:11434",
-			Model:     "gemma4",
-			Timeout:   60 * time.Second,
-			MaxRetries: 3,
 		},
 		Agents: []AgentConfig{
 			{Name: "researcher", Enabled: true},
@@ -166,7 +183,7 @@ func loadConfig(path string) (*AppConfig, error) {
 		},
 	}
 
-	log.Printf("Using configuration (defaults, YAML parsing pending)")
+	log.Printf("Using configuration: provider=%s, model=%s", config.Model.Provider, config.Model.Name)
 	return config, nil
 }
 
@@ -178,19 +195,21 @@ func initializeApp(ctx context.Context, config *AppConfig) (*Application, error)
 
 	var err error
 
-	// 1. Create Ollama model adapter
-	log.Println("Initializing Ollama model adapter...")
-	modelConfig := &model.Config{
-		BaseURL:   config.Ollama.BaseURL,
-		ModelName: config.Ollama.Model,
-		Timeout:   config.Ollama.Timeout,
+	// 1. Create model provider based on configuration
+	log.Printf("Initializing %s model provider...", config.Model.Provider)
+
+	providerConfig := &model.ProviderConfig{
+		Type:     model.ProviderType(config.Model.Provider),
+		Model:    config.Model.Name,
+		BaseURL:  config.Model.Ollama.BaseURL,
+		APIKey:   config.Model.Gemini.APIKey,
 	}
 
-	app.model, err = model.NewOllamaModel(ctx, modelConfig)
+	app.model, err = model.NewModel(ctx, providerConfig)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create Ollama model: %w", err)
+		return nil, fmt.Errorf("failed to create model provider: %w", err)
 	}
-	log.Printf("Model initialized: %s", app.model.Name())
+	log.Printf("Model initialized: %s (%s)", app.model.Name(), config.Model.Provider)
 
 	// 2. Initialize agent registry
 	log.Println("Initializing agent registry...")

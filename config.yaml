@@ -1,13 +1,30 @@
+# Model provider configuration
+# Supported providers: ollama, gemini, apigee, custom
+
+# Ollama provider (local models)
+model:
+  provider: "ollama"
+  name: "gemma4"
+  ollama:
+    base_url: "http://localhost:11434"
+    timeout: 60s
+    max_retries: 3
+
+# Gemini provider (uncomment to use)
+# model:
+#   provider: "gemini"
+#   name: "gemini-2.0-flash-exp"
+#   gemini:
+#     api_key: "${GOOGLE_API_KEY}"  # Set via environment variable
+
+# Custom provider (uncomment to use)
+# model:
+#   provider: "custom"
+
 server:
   port: 8080
   mode: "api"
   log_level: "info"
-
-ollama:
-  base_url: "http://localhost:11434"
-  model: "gemma4"
-  timeout: 60s
-  max_retries: 3
 
 agents:
   - name: "researcher"
