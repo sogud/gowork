@@ -9,3 +9,6 @@ coverage.out
 
 # OS
 .DS_Store
+
+# Worktrees
+.worktrees/
