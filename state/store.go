@@ -33,19 +33,25 @@ func (s *StateStore) GetState() AppState {
 	return s.state.Copy()
 }
 
-// UpdateState atomically updates the state using a copy-on-write pattern.
-// The update function receives a copy of the current state and returns the modified copy.
-// All subscribers are notified after the update.
-// This is safe to call from multiple goroutines.
-func (s *StateStore) UpdateState(update func(AppState) AppState) {
+// updateState performs an atomic state update without emitting notifications.
+// This is used internally by methods that emit specific typed events.
+func (s *StateStore) updateState(update func(AppState) AppState) {
 	s.mu.Lock()
 	newState := update(s.state.Copy())
 	s.state = newState
 	s.mu.Unlock()
+}
 
-	// Notify subscribers outside the lock
+// UpdateState atomically updates the state using a copy-on-write pattern.
+// The update function receives a copy of the current state and returns the modified copy.
+// A generic EventStateChanged notification is emitted after the update.
+// This is safe to call from multiple goroutines.
+func (s *StateStore) UpdateState(update func(AppState) AppState) {
+	s.updateState(update)
+
+	// Notify subscribers with a generic state change event
 	s.notifier.Notify(StateChangeEvent{
-		Type:      EventAgentStatusChanged, // Generic state change event
+		Type:      EventStateChanged,
 		Timestamp: now(),
 		Data:      nil,
 	})
@@ -123,7 +129,7 @@ func (s *StateStore) SetCursorField(field int) {
 
 // StartWorkflow creates and sets a new active workflow.
 func (s *StateStore) StartWorkflow(id, task string, workflowType WorkflowType, agentNames []string) {
-	s.UpdateState(func(state AppState) AppState {
+	s.updateState(func(state AppState) AppState {
 		executions := make([]AgentExecution, len(agentNames))
 		for i, name := range agentNames {
 			executions[i] = AgentExecution{
@@ -161,7 +167,7 @@ func (s *StateStore) UpdateAgentStatus(agentName string, status AgentStatus) {
 	var oldStatus AgentStatus
 	var workflowID string
 
-	s.UpdateState(func(state AppState) AppState {
+	s.updateState(func(state AppState) AppState {
 		if state.ActiveWorkflow == nil {
 			return state
 		}
@@ -200,7 +206,7 @@ func (s *StateStore) UpdateAgentStatus(agentName string, status AgentStatus) {
 func (s *StateStore) UpdateAgentOutput(agentName, output string) {
 	var workflowID string
 
-	s.UpdateState(func(state AppState) AppState {
+	s.updateState(func(state AppState) AppState {
 		if state.ActiveWorkflow == nil {
 			return state
 		}
@@ -234,7 +240,7 @@ func (s *StateStore) UpdateAgentOutput(agentName, output string) {
 func (s *StateStore) AddToolCall(agentName string, toolCall ToolCallInfo) {
 	var workflowID string
 
-	s.UpdateState(func(state AppState) AppState {
+	s.updateState(func(state AppState) AppState {
 		if state.ActiveWorkflow == nil {
 			return state
 		}
@@ -271,7 +277,7 @@ func (s *StateStore) AddToolCall(agentName string, toolCall ToolCallInfo) {
 func (s *StateStore) CompleteWorkflow(finalOutput string) {
 	var workflow *WorkflowState
 
-	s.UpdateState(func(state AppState) AppState {
+	s.updateState(func(state AppState) AppState {
 		if state.ActiveWorkflow == nil {
 			return state
 		}
@@ -303,7 +309,7 @@ func (s *StateStore) CompleteWorkflow(finalOutput string) {
 func (s *StateStore) FailWorkflow(err string) {
 	var workflow *WorkflowState
 
-	s.UpdateState(func(state AppState) AppState {
+	s.updateState(func(state AppState) AppState {
 		if state.ActiveWorkflow == nil {
 			return state
 		}

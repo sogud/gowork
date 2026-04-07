@@ -1,6 +1,7 @@
 package state
 
 import (
+	"strconv"
 	"sync"
 	"time"
 )
@@ -9,8 +10,11 @@ import (
 type EventType int
 
 const (
+	// EventStateChanged is a generic event indicating state has changed.
+	// This is emitted by UpdateState for general state updates.
+	EventStateChanged EventType = iota
 	// EventAgentStatusChanged indicates an agent's status changed.
-	EventAgentStatusChanged EventType = iota
+	EventAgentStatusChanged
 	// EventWorkflowStarted indicates a workflow has started.
 	EventWorkflowStarted
 	// EventWorkflowCompleted indicates a workflow has completed.
@@ -24,6 +28,8 @@ const (
 // String returns a human-readable representation of the event type.
 func (e EventType) String() string {
 	switch e {
+	case EventStateChanged:
+		return "StateChanged"
 	case EventAgentStatusChanged:
 		return "AgentStatusChanged"
 	case EventWorkflowStarted:
@@ -128,32 +134,7 @@ func (n *notifier) Notify(event StateChangeEvent) {
 
 // generateSubscriptionID creates a unique subscription ID.
 func generateSubscriptionID(id int64) string {
-	return "sub_" + time.Now().Format("20060102150405") + "_" + itoa(id)
-}
-
-// itoa converts an int64 to a string (simple implementation).
-func itoa(n int64) string {
-	if n == 0 {
-		return "0"
-	}
-
-	var negative bool
-	if n < 0 {
-		negative = true
-		n = -n
-	}
-
-	var digits []byte
-	for n > 0 {
-		digits = append([]byte{byte('0' + n%10)}, digits...)
-		n /= 10
-	}
-
-	if negative {
-		digits = append([]byte{'-'}, digits...)
-	}
-
-	return string(digits)
+	return "sub_" + time.Now().Format("20060102150405") + "_" + strconv.FormatInt(id, 10)
 }
 
 // AgentStatusEventData contains data for EventAgentStatusChanged events.

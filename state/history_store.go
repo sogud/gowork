@@ -77,7 +77,7 @@ func (h *HistoryStore) SaveRecord(record WorkflowRecord) error {
 
 	// Create the record file path
 	filename := fmt.Sprintf("%s.json", record.ID)
-	filepath := filepath.Join(h.historyDir, filename)
+	recordPath := filepath.Join(h.historyDir, filename)
 
 	// Marshal record to JSON
 	data, err := json.MarshalIndent(record, "", "  ")
@@ -86,7 +86,7 @@ func (h *HistoryStore) SaveRecord(record WorkflowRecord) error {
 	}
 
 	// Write to file
-	if err := os.WriteFile(filepath, data, 0644); err != nil {
+	if err := os.WriteFile(recordPath, data, 0644); err != nil {
 		return fmt.Errorf("failed to write record file: %w", err)
 	}
 

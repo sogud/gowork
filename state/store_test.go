@@ -72,7 +72,7 @@ func TestStateStoreSubscribe(t *testing.T) {
 		wg.Done()
 	})
 
-	// Trigger an update
+	// Trigger an update - should emit EventStateChanged
 	store.SetScreen(ScreenConfig)
 
 	// Wait for notification
@@ -80,6 +80,9 @@ func TestStateStoreSubscribe(t *testing.T) {
 
 	if receivedEvent == nil {
 		t.Errorf("Expected to receive event notification")
+	}
+	if receivedEvent.Type != EventStateChanged {
+		t.Errorf("Expected EventStateChanged, got %v", receivedEvent.Type)
 	}
 }
 

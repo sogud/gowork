@@ -11,6 +11,7 @@ func TestEventTypeString(t *testing.T) {
 		eventType EventType
 		expected  string
 	}{
+		{EventStateChanged, "StateChanged"},
 		{EventAgentStatusChanged, "AgentStatusChanged"},
 		{EventWorkflowStarted, "WorkflowStarted"},
 		{EventWorkflowCompleted, "WorkflowCompleted"},
