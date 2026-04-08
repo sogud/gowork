@@ -11,6 +11,7 @@ Gowork is a flexible multi-agent system that enables complex task execution thro
 - **Multi-Model Support**: Works with Ollama, Gemini, or any ADK-compatible model
 - **Multi-Agent Architecture**: 5 specialized agents (Researcher, Analyst, Writer, Reviewer, Coordinator)
 - **Flexible Workflows**: Sequential, parallel, loop, and dynamic execution patterns
+- **Terminal UI (TUI)**: Interactive terminal interface with real-time workflow monitoring
 - **Streaming Support**: Real-time response streaming
 - **State Management**: Shared memory service for agent collaboration
 - **Extensible Tools**: Pluggable tool registry for extending agent capabilities
@@ -33,7 +34,7 @@ Gowork is a flexible multi-agent system that enables complex task execution thro
          |
          v
 +--------+---------+
-|   Server Layer   |  <- REST API / CLI
+|   Server Layer   |  <- REST API / CLI / TUI
 +--------+---------+
          |
          v
@@ -57,7 +58,7 @@ Gowork is a flexible multi-agent system that enables complex task execution thro
          |
          v
 +--------+---------+
-|   Model Layer    |  <- Ollama Gemma 4 Adapter
+|   Model Layer    |  <- Ollama / Gemini / Custom
 +------------------+
 ```
 
@@ -65,12 +66,14 @@ Gowork is a flexible multi-agent system that enables complex task execution thro
 
 | Layer | Description |
 |-------|-------------|
-| Model | Ollama API adapter with streaming support |
+| Model | Model provider abstraction (Ollama, Gemini, custom) |
 | Agents | Specialized agents with distinct roles |
 | Workflow | Orchestration engine for agent coordination |
 | Memory | State management for cross-agent communication |
 | Tools | Extensible tool system for agent capabilities |
-| Server | HTTP API and CLI interfaces |
+| Server | HTTP API, CLI, and TUI interfaces |
+| TUI | Terminal UI with Bubbletea framework |
+| State | Application state management with subscriber pattern |
 
 ## Quick Start
 
@@ -97,6 +100,9 @@ ollama pull gemma4
 ### Running the Server
 
 ```bash
+# TUI mode (interactive terminal interface)
+go run main.go --mode tui --config config.yaml
+
 # API mode (default)
 go run main.go --mode api --config config.yaml
 
@@ -105,8 +111,30 @@ go run main.go --mode cli --task "Research the benefits of microservices archite
 
 # Build and run
 go build -o gowork .
-./gowork --mode api --config config.yaml
+./gowork --mode tui --config config.yaml
 ```
+
+### TUI Mode
+
+The TUI provides an interactive terminal interface with:
+
+- **Home Screen**: Quick navigation and agent status overview
+- **TaskInput Screen**: Submit tasks with workflow type and agent selection
+- **Monitor Screen**: Real-time workflow execution monitoring with progress bars
+- **Config Screen**: Manage model, agents, and tools configuration
+- **History Screen**: View past workflow executions
+
+**TUI Keyboard Shortcuts:**
+
+| Key | Action |
+|-----|--------|
+| `1-4` | Navigate to screens |
+| `Tab` | Cycle through fields |
+| `Space` | Toggle selection |
+| `Enter` | Confirm/Submit |
+| `Esc` | Go back |
+| `q` | Quit |
+| `?` | Show help |
 
 ### First Request
 
@@ -265,9 +293,10 @@ gowork/
 |   +-- researcher.go    # Researcher agent
 |   +-- analyst.go       # Analyst agent
 |   +-- writer.go        # Writer agent
-|   +-- reviewer.go       # Reviewer agent
+|   +-- reviewer.go      # Reviewer agent
 |   +-- coordinator.go   # Coordinator agent
 +-- model/               # Model adapter
+|   +-- provider.go      # Model provider abstraction
 |   +-- ollama.go        # Ollama adapter
 |   +-- config.go        # Model configuration
 +-- workflow/            # Workflow engine
@@ -277,6 +306,11 @@ gowork/
 |   +-- service.go       # Memory service interface
 |   +-- inmemory.go      # In-memory implementation
 |   +-- state.go         # State manager
++-- state/               # Application state (for TUI)
+|   +-- app_state.go     # Immutable state types
+|   +-- store.go         # State store with subscribers
+|   +-- notifier.go      # Event notification system
+|   +-- history_store.go # Workflow history persistence
 +-- tools/               # Tool implementations
 |   +-- registry.go      # Tool registry
 |   +-- search.go        # Web search tool
@@ -284,7 +318,26 @@ gowork/
 |   +-- calculator.go    # Calculator tool
 +-- server/              # HTTP server
 |   +-- api.go           # API handlers
-|   +-- config.go       # Server configuration
+|   +-- config.go        # Server configuration
++-- tui/                 # Terminal UI
+|   +-- main.go          # TUI entry point
+|   +-- app.go           # Bubbletea app model
+|   +-- registry.go      # Screen registry
+|   +-- components/      # Reusable UI components
+|   |   +-- input.go     # Text input
+|   |   +-- list.go      # Selection list
+|   |   +-- progress.go  # Progress bar
+|   |   +-- status_bar.go# Status bar
+|   |   +-- border.go    # Border styles
+|   +-- screens/         # Screen implementations
+|   |   +-- home.go      # Home screen
+|   |   +-- task_input.go# Task submission
+|   |   +-- monitor.go   # Workflow monitoring
+|   |   +-- config.go    # Configuration
+|   |   +-- history.go   # History view
+|   +-- styles/          # Lipgloss styles
+|       +-- theme.go     # Color theme
+|       +-- layout.go    # Layout utilities
 +-- tests/               # Integration tests
 |   +-- e2e_test.go      # End-to-end tests
 |   +-- mock_server.go   # Mock Ollama server
@@ -316,9 +369,13 @@ go test ./workflow -v
 | memory | 93.6% |
 | model | 90.7% |
 | server | 90.9% |
+| state | 90.0% |
 | tools | 79.5% |
+| tui | 85.0% |
+| tui/components | 82.0% |
+| tui/screens | 80.0% |
 | workflow | 95.5% |
-| **Total** | **67.6%** |
+| **Total** | **80.0%** |
 
 ## Contributing
 
@@ -345,3 +402,4 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - Built with [adk-go](https://github.com/google/adk-go) - Agent Development Kit for Go
 - Powered by [Ollama](https://ollama.ai/) - Local LLM inference
 - Uses [Gemma 4](https://ai.google.dev/gemma) - Open language model by Google
+- TUI powered by [Bubbletea](https://github.com/charmbracelet/bubbletea) - Elegant TUI framework
